@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  password  String
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  rides     Ride[]
+  bookings  Booking[]
+  notifications Notification[]
+}
+
+model Ride {
+  id         String    @id @default(cuid())
+  driverName String
+  from       String
+  to         String
+  price      Int
+  seats      Int
+  time       DateTime
+  createdAt  DateTime  @default(now())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  bookings   Booking[]
+}
+
+model Booking {
+  id        String        @id @default(cuid())
+  rideId    String
+  ride      Ride          @relation(fields: [rideId], references: [id])
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  status    BookingStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  message    String
+  type       String
+  read       Boolean  @default(false)
+  bookingId  String?
+  createdAt  DateTime @default(now())
+}
